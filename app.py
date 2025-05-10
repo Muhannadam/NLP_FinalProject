@@ -7,7 +7,7 @@ import re
 from collections import Counter
 
 # ========== إعداد التوكنات ==========
-HUGGINGFACE_API_TOKEN = "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"
+HUGGINGFACE_API_TOKEN = "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"
 GROQ_API_KEY = "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"
 
 # ========== تحميل النماذج المدربة ==========
@@ -71,7 +71,7 @@ def suggest_title(text):
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "mistral-7b-instruct",
+        "model": "allam-2-7b",
         "messages": [
             {"role": "system", "content": "أنت مساعد ذكي مختص في كتابة عناوين إخبارية جذابة باللغة العربية."},
             {"role": "user", "content": f"اقترح عنوانًا قصيرًا لهذا المقال:\n\n{text}"}
