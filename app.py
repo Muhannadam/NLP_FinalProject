@@ -1,10 +1,11 @@
-# ========== app.py بدون تلخيص ==========
+# ========== app.py ==========
 
 import streamlit as st
 import joblib
 import re
 from collections import Counter
 import matplotlib.pyplot as plt
+import random
 
 # ========== تحميل النماذج المدربة ==========
 tfidf = joblib.load('tfidf_vectorizer.pkl')
@@ -48,6 +49,37 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
+# تفسير التصنيف (أهم الكلمات)
+def explain_decision(text, top_n=5):
+    vectorized = tfidf.transform([text])
+    feature_names = tfidf.get_feature_names_out()
+    dense = vectorized.todense().tolist()[0]
+    word_scores = list(zip(feature_names, dense))
+    sorted_words = sorted(word_scores, key=lambda x: x[1], reverse=True)
+    important_words = [word for word, score in sorted_words if score > 0][:top_n]
+    return important_words
+
+# حوار مع المقال (توليد أسئلة ذكية)
+def generate_questions(important_words):
+    questions = []
+    templates = [
+        "ما هو تأثير {} على المجتمع؟",
+        "كيف يمكن تحسين {} في المستقبل؟",
+        "ما هي التحديات المتعلقة بـ {}؟",
+        "ما أهمية {} في هذا السياق؟",
+        "كيف يؤثر {} على الاقتصاد؟"
+    ]
+    for word in important_words:
+        question = random.choice(templates).format(word)
+        questions.append(question)
+    return questions
+
+# اقتراح عنوان للمقال
+def suggest_title(important_words):
+    if not important_words:
+        return "مقال إخباري جديد"
+    return f"تحليل: {important_words[0]} وتأثيره في الأحداث الجارية"
+
 # صفحة حول المشروع
 def show_about():
     st.markdown("""
@@ -57,7 +89,11 @@ def show_about():
     - **مجموعة البيانات**: SANAD Dataset.
     - **التمثيل النصي**: TF-IDF Vectorization.
     - **النموذج المستخدم**: Support Vector Machine (SVM).
-    - **ميزات إضافية**: عرض أفضل 3 تصنيفات، نسبة الثقة، وتحليل نصي بسيط.
+    - **ميزات إضافية**: 
+      - عرض أفضل 3 تصنيفات.
+      - تفسير قرار التصنيف.
+      - توليد أسئلة ذكية للنقاش.
+      - اقتراح عنوان صحفي للمقال.
     
     ### إعداد الطالب:
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
@@ -93,17 +129,18 @@ with tabs[0]:
     st.subheader("📄 أدخل نص المقال:")
     user_input = st.text_area("✍️ اكتب أو الصق نص المقال هنا:", height=250)
 
-    if st.button("🔎 تصنيف المقال"):
+    if st.button("🔎 تصنيف وتحليل المقال"):
         if not user_input.strip():
             st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
         else:
+            # تصنيف
             top3_predictions = predict_top3(user_input)
             
             st.success("✅ أعلى 3 تصنيفات محتملة:")
             for label, percent in top3_predictions:
                 st.write(f"🔹 {label}: {percent}%")
 
-            # تحليل إضافي للنص
+            # تحليل إضافي
             st.markdown("---")
             st.info("📊 تحليل نص المقال:")
             num_words, common_words = analyze_text(user_input)
@@ -111,6 +148,28 @@ with tabs[0]:
             st.write("- أكثر الكلمات تكراراً:")
             for word, count in common_words:
                 st.write(f"  • {word} ({count} مرات)")
+
+            # تفسير القرار
+            st.markdown("---")
+            st.success("🧠 تفسير قرار التصنيف (أهم الكلمات المؤثرة):")
+            important_words = explain_decision(user_input, top_n=5)
+            if important_words:
+                st.write(", ".join(important_words))
+            else:
+                st.write("لا توجد كلمات مؤثرة كافية.")
+
+            # حوار مع المقال
+            st.markdown("---")
+            st.info("🤔 أسئلة ذكية بناءً على المقال:")
+            questions = generate_questions(important_words)
+            for q in questions:
+                st.write(f"• {q}")
+
+            # اقتراح عنوان للمقال
+            st.markdown("---")
+            st.success("📝 اقتراح عنوان للمقال:")
+            title = suggest_title(important_words)
+            st.write(f"**{title}**")
 
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
