@@ -1,13 +1,10 @@
-# ========== app.py ==========
+# ========== app.py بدون تلخيص ==========
 
 import streamlit as st
 import joblib
 import re
 from collections import Counter
 import matplotlib.pyplot as plt
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lsa import LsaSummarizer
 
 # ========== تحميل النماذج المدربة ==========
 tfidf = joblib.load('tfidf_vectorizer.pkl')
@@ -51,14 +48,6 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
-# تلخيص النص
-def summarize_text(text, sentence_count=3):
-    parser = PlaintextParser.from_string(text, Tokenizer("arabic"))
-    summarizer = LsaSummarizer()
-    summary = summarizer(parser.document, sentence_count)
-    summarized_text = " ".join(str(sentence) for sentence in summary)
-    return summarized_text
-
 # صفحة حول المشروع
 def show_about():
     st.markdown("""
@@ -68,7 +57,7 @@ def show_about():
     - **مجموعة البيانات**: SANAD Dataset.
     - **التمثيل النصي**: TF-IDF Vectorization.
     - **النموذج المستخدم**: Support Vector Machine (SVM).
-    - **ميزات إضافية**: عرض أفضل 3 تصنيفات، نسبة الثقة، تحليل نصي، وتلخيص المقال تلقائياً.
+    - **ميزات إضافية**: عرض أفضل 3 تصنيفات، نسبة الثقة، وتحليل نصي بسيط.
     
     ### إعداد الطالب:
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
@@ -104,38 +93,4 @@ with tabs[0]:
     st.subheader("📄 أدخل نص المقال:")
     user_input = st.text_area("✍️ اكتب أو الصق نص المقال هنا:", height=250)
 
-    if st.button("🔎 تصنيف وتلخيص المقال"):
-        if not user_input.strip():
-            st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
-        else:
-            top3_predictions = predict_top3(user_input)
-            
-            st.success("✅ أعلى 3 تصنيفات محتملة:")
-            for label, percent in top3_predictions:
-                st.write(f"🔹 {label}: {percent}%")
-
-            # تحليل إضافي للنص
-            st.markdown("---")
-            st.info("📊 تحليل نص المقال:")
-            num_words, common_words = analyze_text(user_input)
-            st.write(f"- عدد الكلمات: {num_words}")
-            st.write("- أكثر الكلمات تكراراً:")
-            for word, count in common_words:
-                st.write(f"  • {word} ({count} مرات)")
-
-            # تلخيص المقال
-            st.markdown("---")
-            st.success("📝 تلخيص المقال:")
-            try:
-                summary = summarize_text(user_input, sentence_count=3)
-                st.write(summary if summary else "لا يوجد ملخص مناسب للمقال.")
-            except Exception as e:
-                st.warning("⚠️ تعذر تلخيص النص بسبب قصر المقال أو مشكلة في التحليل.")
-
-# ======== التبويب الثاني: حول المشروع ========
-with tabs[1]:
-    show_about()
-
-# ======== تذييل ========
-st.markdown("---")
-st.caption("🚀 مشروع طلابي مقدم لمقرر EMAI 631 - جميع الحقوق محفوظة © 2025")
+    if st.button("🔎 تصنيف المقال"):
