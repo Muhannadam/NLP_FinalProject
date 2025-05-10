@@ -94,3 +94,28 @@ with tabs[0]:
     user_input = st.text_area("✍️ اكتب أو الصق نص المقال هنا:", height=250)
 
     if st.button("🔎 تصنيف المقال"):
+        if not user_input.strip():
+            st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
+        else:
+            top3_predictions = predict_top3(user_input)
+            
+            st.success("✅ أعلى 3 تصنيفات محتملة:")
+            for label, percent in top3_predictions:
+                st.write(f"🔹 {label}: {percent}%")
+
+            # تحليل إضافي للنص
+            st.markdown("---")
+            st.info("📊 تحليل نص المقال:")
+            num_words, common_words = analyze_text(user_input)
+            st.write(f"- عدد الكلمات: {num_words}")
+            st.write("- أكثر الكلمات تكراراً:")
+            for word, count in common_words:
+                st.write(f"  • {word} ({count} مرات)")
+
+# ======== التبويب الثاني: حول المشروع ========
+with tabs[1]:
+    show_about()
+
+# ======== تذييل ========
+st.markdown("---")
+st.caption("🚀 مشروع طلابي مقدم لمقرر EMAI 631 - جميع الحقوق محفوظة © 2025")
