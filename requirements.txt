@@ -2,3 +2,4 @@ streamlit
 scikit-learn
 joblib
 matplotlib
+sumy
