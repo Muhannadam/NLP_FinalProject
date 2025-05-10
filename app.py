@@ -1,10 +1,14 @@
 # ========== app.py ==========
 
 import streamlit as st
+import requests
 import joblib
 import re
 from collections import Counter
-import matplotlib.pyplot as plt
+
+# ========== إعداد التوكنات ==========
+HUGGINGFACE_API_TOKEN = "ضع هنا توكن Huggingface الخاص بك"
+GROQ_API_KEY = "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"
 
 # ========== تحميل النماذج المدربة ==========
 tfidf = joblib.load('tfidf_vectorizer.pkl')
@@ -48,16 +52,49 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
+# تلخيص المقال باستخدام Hugging Face
+def summarize_text(text):
+    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+    headers = {"Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"}
+    payload = {"inputs": text}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    if response.status_code == 200:
+        summary = response.json()[0]['summary_text']
+        return summary
+    else:
+        return "❌ تعذر تلخيص المقال حالياً."
+
+# اقتراح عنوان باستخدام Groq API
+def suggest_title(text):
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "mixtral-8x7b-32768",
+        "messages": [
+            {"role": "system", "content": "أنت مساعد ذكي مختص في كتابة عناوين إخبارية جذابة باللغة العربية."},
+            {"role": "user", "content": f"اقترح عنوانًا قصيرًا لهذا المقال:\n\n{text}"}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 50
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"].strip()
+    else:
+        return "❌ تعذر اقتراح عنوان حالياً."
+
 # صفحة حول المشروع
 def show_about():
     st.markdown("""
     ## حول المشروع 🧠
     هذا النظام يقوم بتصنيف المقالات الإخبارية المكتوبة باللغة العربية إلى فئات محددة باستخدام الذكاء الاصطناعي.
     
-    - **مجموعة البيانات**: SANAD Dataset.
-    - **التمثيل النصي**: TF-IDF Vectorization.
-    - **النموذج المستخدم**: Support Vector Machine (SVM).
-    - **ميزات إضافية**: عرض أفضل 3 تصنيفات وتحليل نصي بسيط.
+    - **تصنيف المقال** باستخدام SVM.
+    - **تلخيص المقال الذكي** باستخدام Huggingface BART.
+    - **اقتراح عنوان ذكي** باستخدام Groq Mixtral.
     
     ### إعداد الطالب:
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
@@ -86,14 +123,14 @@ st.markdown(
 
 st.title("📰 تصنيف الأخبار العربية باستخدام الذكاء الاصطناعي")
 
-tabs = st.tabs(["📰 تصنيف مقال", "ℹ️ حول المشروع"])
+tabs = st.tabs(["📰 تصنيف وتحليل مقال", "ℹ️ حول المشروع"])
 
-# ======== التبويب الأول: تصنيف مقال ========
+# ======== التبويب الأول: تصنيف وتحليل مقال ========
 with tabs[0]:
     st.subheader("📄 أدخل نص المقال:")
     user_input = st.text_area("✍️ اكتب أو الصق نص المقال هنا:", height=250)
 
-    if st.button("🔎 تصنيف وتحليل المقال"):
+    if st.button("🔎 تحليل المقال"):
         if not user_input.strip():
             st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
         else:
@@ -104,7 +141,7 @@ with tabs[0]:
             for label, percent in top3_predictions:
                 st.write(f"🔹 {label}: {percent}%")
 
-            # تحليل إضافي للنص
+            # تحليل إضافي
             st.markdown("---")
             st.info("📊 تحليل نص المقال:")
             num_words, common_words = analyze_text(user_input)
@@ -112,6 +149,18 @@ with tabs[0]:
             st.write("- أكثر الكلمات تكراراً:")
             for word, count in common_words:
                 st.write(f"  • {word} ({count} مرات)")
+
+            # تلخيص المقال
+            st.markdown("---")
+            st.success("📝 تلخيص المقال:")
+            summary = summarize_text(user_input)
+            st.write(summary)
+
+            # اقتراح عنوان للمقال
+            st.markdown("---")
+            st.success("📰 اقتراح عنوان للمقال:")
+            title = suggest_title(user_input)
+            st.write(f"**{title}**")
 
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
