@@ -54,7 +54,8 @@ def analyze_text(text):
 
 # تلخيص المقال باستخدام Hugging Face
 def summarize_text(text):
-    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+    # استخدام موديل أخف للتلخيص
+    API_URL = "https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-12-6"
     headers = {"Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"}
     payload = {"inputs": text}
     response = requests.post(API_URL, headers=headers, json=payload)
@@ -72,7 +73,7 @@ def suggest_title(text):
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "mixtral-8x7b-32768",
+        "model": "mistral-7b-instruct",
         "messages": [
             {"role": "system", "content": "أنت مساعد ذكي مختص في كتابة عناوين إخبارية جذابة باللغة العربية."},
             {"role": "user", "content": f"اقترح عنوانًا قصيرًا لهذا المقال:\n\n{text}"}
