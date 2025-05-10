@@ -52,20 +52,18 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
-# تلخيص المقال باستخدام Hugging Face
+# تلخيص المقال مع عرض خطأ واضح
 def summarize_text(text):
-    # استخدام موديل أخف للتلخيص
     API_URL = "https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-12-6"
     headers = {"Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"}
     payload = {"inputs": text}
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
-        summary = response.json()[0]['summary_text']
-        return summary
+        return response.json()[0]['summary_text']
     else:
-        return "❌ تعذر تلخيص المقال حالياً."
+        return f"❌ خطأ تلخيص: {response.status_code} - {response.text}"
 
-# اقتراح عنوان باستخدام Groq API
+# اقتراح عنوان مع عرض خطأ واضح
 def suggest_title(text):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -85,7 +83,7 @@ def suggest_title(text):
     if response.status_code == 200:
         return response.json()["choices"][0]["message"]["content"].strip()
     else:
-        return "❌ تعذر اقتراح عنوان حالياً."
+        return f"❌ خطأ عنوان: {response.status_code} - {response.text}"
 
 # صفحة حول المشروع
 def show_about():
