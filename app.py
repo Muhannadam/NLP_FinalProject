@@ -7,7 +7,7 @@ import re
 from collections import Counter
 
 # ========== إعداد التوكنات ==========
-HUGGINGFACE_API_TOKEN = "ضع هنا توكن Huggingface الخاص بك"
+HUGGINGFACE_API_TOKEN = "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"
 GROQ_API_KEY = "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"
 
 # ========== تحميل النماذج المدربة ==========
