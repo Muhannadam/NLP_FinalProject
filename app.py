@@ -1,4 +1,4 @@
-# ========== app.py ==========
+# ========== app.py (باستخدام allam-2-7b فقط) ==========
 
 import streamlit as st
 import requests
@@ -7,7 +7,6 @@ import re
 from collections import Counter
 
 # ========== إعداد التوكنات ==========
-HUGGINGFACE_API_TOKEN = "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"
 GROQ_API_KEY = "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"
 
 # ========== تحميل النماذج المدربة ==========
@@ -40,7 +39,7 @@ def predict_top3(text):
     top3_scores = probabilities[0][top3_idx]
     top3_labels = label_encoder.inverse_transform(top3_idx)
 
-    normalized_scores = (top3_scores - top3_scores.min()) / (top3_scores.max() - top3_scores.min() + 1e-6)
+    normalized_scores = (top3_scores - top3_scores.min()) / (top3_scores.max() - 1e-6)
     percentages = (normalized_scores * 100).astype(int)
 
     return list(zip(top3_labels, percentages))
@@ -52,19 +51,8 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
-# تلخيص المقال مع عرض خطأ واضح
-def summarize_text(text):
-    API_URL = "https://api-inference.huggingface.co/models/sshleifer/distilbart-cnn-12-6"
-    headers = {"Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}"}
-    payload = {"inputs": text}
-    response = requests.post(API_URL, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json()[0]['summary_text']
-    else:
-        return f"❌ خطأ تلخيص: {response.status_code} - {response.text}"
-
-# اقتراح عنوان مع عرض خطأ واضح
-def suggest_title(text):
+# تلخيص واقتراح عنوان عبر Groq API
+def summarize_and_suggest_title(text):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -73,27 +61,27 @@ def suggest_title(text):
     payload = {
         "model": "allam-2-7b",
         "messages": [
-            {"role": "system", "content": "أنت مساعد ذكي مختص في كتابة عناوين إخبارية جذابة باللغة العربية."},
-            {"role": "user", "content": f"اقترح عنوانًا قصيرًا لهذا المقال:\n\n{text}"}
+            {"role": "system", "content": "أنت مساعد ذكي. عندما يصلك نص طويل، قم بتلخيصه بشكل مختصر، ثم اقترح عنوانًا قصيرًا وجذابًا باللغة العربية."},
+            {"role": "user", "content": f"هذا هو نص المقال:\n\n{text}\n\nرجاءً: 1- لخص المقال في فقرة قصيرة. 2- اقترح عنوانًا ذكيًا للمقال."}
         ],
-        "temperature": 0.7,
-        "max_tokens": 50
+        "temperature": 0.5,
+        "max_tokens": 500
     }
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"].strip()
+        reply = response.json()["choices"][0]["message"]["content"].strip()
+        return reply
     else:
-        return f"❌ خطأ عنوان: {response.status_code} - {response.text}"
+        return f"❌ خطأ في الاتصال: {response.status_code} - {response.text}"
 
 # صفحة حول المشروع
 def show_about():
     st.markdown("""
     ## حول المشروع 🧠
-    هذا النظام يقوم بتصنيف المقالات الإخبارية المكتوبة باللغة العربية إلى فئات محددة باستخدام الذكاء الاصطناعي.
+    هذا النظام يقوم بتصنيف المقالات الإخبارية المكتوبة باللغة العربية باستخدام الذكاء الاصطناعي.
     
     - **تصنيف المقال** باستخدام SVM.
-    - **تلخيص المقال الذكي** باستخدام Huggingface BART.
-    - **اقتراح عنوان ذكي** باستخدام Groq Mixtral.
+    - **تلخيص المقال واقتراح عنوان** باستخدام Groq - Allam 2 7B.
     
     ### إعداد الطالب:
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
@@ -149,17 +137,11 @@ with tabs[0]:
             for word, count in common_words:
                 st.write(f"  • {word} ({count} مرات)")
 
-            # تلخيص المقال
+            # تلخيص واقتراح عنوان
             st.markdown("---")
-            st.success("📝 تلخيص المقال:")
-            summary = summarize_text(user_input)
-            st.write(summary)
-
-            # اقتراح عنوان للمقال
-            st.markdown("---")
-            st.success("📰 اقتراح عنوان للمقال:")
-            title = suggest_title(user_input)
-            st.write(f"**{title}**")
+            st.success("📝 تلخيص المقال واقتراح عنوان:")
+            result = summarize_and_suggest_title(user_input)
+            st.write(result)
 
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
