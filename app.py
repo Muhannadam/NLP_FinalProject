@@ -1,13 +1,14 @@
-# ========== app.py (باستخدام allam-2-7b فقط) ==========
+# ========== app.py (باستخدام allam-2-7b فقط، بدون تحليل النص) ==========
 
 import streamlit as st
 import requests
 import joblib
 import re
-from collections import Counter
+import os
 
 # ========== إعداد التوكنات ==========
-GROQ_API_KEY = "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"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 
 # ========== تحميل النماذج المدربة ==========
 tfidf = joblib.load('tfidf_vectorizer.pkl')
@@ -43,13 +44,6 @@ def predict_top3(text):
     percentages = (normalized_scores * 100).astype(int)
 
     return list(zip(top3_labels, percentages))
-
-# تحليل النص (عدد الكلمات + الكلمات المتكررة)
-def analyze_text(text):
-    words = clean_text(text).split()
-    num_words = len(words)
-    most_common = Counter(words).most_common(5)
-    return num_words, most_common
 
 # تلخيص واقتراح عنوان عبر Groq API
 def summarize_and_suggest_title(text):
@@ -127,15 +121,6 @@ with tabs[0]:
             st.success("✅ أعلى 3 تصنيفات محتملة:")
             for label, percent in top3_predictions:
                 st.write(f"🔹 {label}: {percent}%")
-
-            # تحليل إضافي
-            st.markdown("---")
-            st.info("📊 تحليل نص المقال:")
-            num_words, common_words = analyze_text(user_input)
-            st.write(f"- عدد الكلمات: {num_words}")
-            st.write("- أكثر الكلمات تكراراً:")
-            for word, count in common_words:
-                st.write(f"  • {word} ({count} مرات)")
 
             # تلخيص واقتراح عنوان
             st.markdown("---")
