@@ -59,26 +59,7 @@ def explain_decision(text, top_n=5):
     important_words = [word for word, score in sorted_words if score > 0][:top_n]
     return important_words
 
-# حوار مع المقال (توليد أسئلة ذكية)
-def generate_questions(important_words):
-    questions = []
-    templates = [
-        "ما هو تأثير {} على المجتمع؟",
-        "كيف يمكن تحسين {} في المستقبل؟",
-        "ما هي التحديات المتعلقة بـ {}؟",
-        "ما أهمية {} في هذا السياق؟",
-        "كيف يؤثر {} على الاقتصاد؟"
-    ]
-    for word in important_words:
-        question = random.choice(templates).format(word)
-        questions.append(question)
-    return questions
 
-# اقتراح عنوان للمقال
-def suggest_title(important_words):
-    if not important_words:
-        return "مقال إخباري جديد"
-    return f"تحليل: {important_words[0]} وتأثيره في الأحداث الجارية"
 
 # صفحة حول المشروع
 def show_about():
@@ -158,19 +139,7 @@ with tabs[0]:
             else:
                 st.write("لا توجد كلمات مؤثرة كافية.")
 
-            # حوار مع المقال
-            st.markdown("---")
-            st.info("🤔 أسئلة ذكية بناءً على المقال:")
-            questions = generate_questions(important_words)
-            for q in questions:
-                st.write(f"• {q}")
-
-            # اقتراح عنوان للمقال
-            st.markdown("---")
-            st.success("📝 اقتراح عنوان للمقال:")
-            title = suggest_title(important_words)
-            st.write(f"**{title}**")
-
+            
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
     show_about()
