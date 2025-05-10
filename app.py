@@ -48,16 +48,6 @@ def analyze_text(text):
     most_common = Counter(words).most_common(5)
     return num_words, most_common
 
-# تفسير القرار (أهم الكلمات)
-def explain_decision(text, top_n=5):
-    vectorized = tfidf.transform([text])
-    feature_names = tfidf.get_feature_names_out()
-    dense = vectorized.todense().tolist()[0]
-    word_scores = list(zip(feature_names, dense))
-    sorted_words = sorted(word_scores, key=lambda x: x[1], reverse=True)
-    important_words = [word for word, score in sorted_words if score > 0][:top_n]
-    return important_words
-
 # صفحة حول المشروع
 def show_about():
     st.markdown("""
@@ -67,7 +57,7 @@ def show_about():
     - **مجموعة البيانات**: SANAD Dataset.
     - **التمثيل النصي**: TF-IDF Vectorization.
     - **النموذج المستخدم**: Support Vector Machine (SVM).
-    - **ميزات إضافية**: عرض أفضل 3 تصنيفات، تفسير قرار التصنيف، وتحليل نصي بسيط.
+    - **ميزات إضافية**: عرض أفضل 3 تصنيفات وتحليل نصي بسيط.
     
     ### إعداد الطالب:
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
@@ -114,7 +104,7 @@ with tabs[0]:
             for label, percent in top3_predictions:
                 st.write(f"🔹 {label}: {percent}%")
 
-            # تحليل إضافي
+            # تحليل إضافي للنص
             st.markdown("---")
             st.info("📊 تحليل نص المقال:")
             num_words, common_words = analyze_text(user_input)
@@ -122,15 +112,6 @@ with tabs[0]:
             st.write("- أكثر الكلمات تكراراً:")
             for word, count in common_words:
                 st.write(f"  • {word} ({count} مرات)")
-
-            # تفسير القرار
-            st.markdown("---")
-            st.success("🧠 تفسير قرار التصنيف (أهم الكلمات المؤثرة):")
-            important_words = explain_decision(user_input, top_n=5)
-            if important_words:
-                st.write(", ".join(important_words))
-            else:
-                st.write("لا توجد كلمات مؤثرة كافية.")
 
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
