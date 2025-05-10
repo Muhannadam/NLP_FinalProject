@@ -72,6 +72,20 @@ st.set_page_config(
     layout="centered"
 )
 
+# إعداد اتجاه النص من اليمين إلى اليسار RTL
+st.markdown(
+    """
+    <style>
+    body, .stApp {
+        direction: rtl;
+        text-align: right;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 st.title("📰 تصنيف الأخبار العربية باستخدام الذكاء الاصطناعي")
 
 tabs = st.tabs(["📰 تصنيف مقال", "ℹ️ حول المشروع"])
