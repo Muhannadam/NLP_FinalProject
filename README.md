@@ -50,6 +50,7 @@ The system was designed to handle Arabic language text properly (Right-to-Left) 
 
 - **Dataset Name:** SANAD Dataset
 - **Languages:** Arabic
+- **Dataset Link:** https://www.kaggle.com/datasets/haithemhermessi/sanad-dataset
 - **Categories:** Finance, Sports, Medical, Technology, Politics, Religion, Culture
 - **Number of Samples:** 45,500 articles
 - **Preprocessing Steps:**
