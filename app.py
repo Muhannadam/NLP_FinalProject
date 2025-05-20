@@ -67,7 +67,7 @@ def predict_top3_with_model(text, model_name):
     else:
         probabilities = svm_model.predict_proba(vectorized)[0]
 
-    top3_idx = probabilities.argsort()[-3:][::-1]
+    top3_idx = probabilities.argsort()[:][::-1]
     top3_scores = probabilities[top3_idx]
     top3_labels = label_encoder.inverse_transform(top3_idx)
 
