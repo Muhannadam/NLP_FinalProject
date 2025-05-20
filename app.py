@@ -21,8 +21,29 @@ lr_model = joblib.load('lr_model.pkl')
 
 # تنظيف النص
 def clean_text(text):
-    text = re.sub(r'[^\u0600-\u06FF\s]', '', text)
+    if not isinstance(text, str):
+        return ''
+
+    # إزالة التشكيل
+    text = remove_tashkeel(text)
+    
+    # إزالة علامات الترقيم والأرقام
+    text = re.sub(r'[^\u0600-\u06FF\s]', ' ', text) 
+    text = re.sub(r'[\d\u0660-\u0669]+', ' ', text)
+    text = re.sub(r'[a-zA-Z]+', ' ', text)
+    
+    # إزالة الفراغات الزائدة
     text = re.sub(r'\s+', ' ', text).strip()
+    
+    # إزالة التكرار المبالغ فيه
+    text = remove_repeated_chars(text)
+    
+    # إزالة كلمات التوقف
+    tokens = text.split()
+    tokens = [word for word in tokens if word not in arabic_stopwords]
+
+    text = ' '.join(tokens)
+
     return text
 
 # التنبؤ بأعلى 3 تصنيفات
