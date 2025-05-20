@@ -142,4 +142,4 @@ with tabs[1]:
 
 # ======== تذييل ========
 st.markdown("---")
-st.caption(" مشروع مقدم لمقرر EMAI 631 - 2025")
+st.caption("  NLP مشروع مقدم لمقرر EMAI 631")
