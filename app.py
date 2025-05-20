@@ -30,24 +30,19 @@ def predict_top3_with_model(text, model_name):
     cleaned = clean_text(text)
     vectorized = tfidf.transform([cleaned])
 
-    # اختيار النموذج حسب اسم المستخدم
     if model_name == "Logistic Regression":
         probabilities = lr_model.predict_proba(vectorized)[0]
     else:
         probabilities = svm_model.predict_proba(vectorized)[0]
 
-
-    if len(probabilities.shape) == 1:
-        probabilities = probabilities.reshape(1, -1)
-
-    top3_idx = probabilities.argsort()[0][-3:][::-1]
-    top3_scores = probabilities[0][top3_idx]
+    top3_idx = probabilities.argsort()[-3:][::-1]
+    top3_scores = probabilities[top3_idx]
     top3_labels = label_encoder.inverse_transform(top3_idx)
 
-    normalized_scores = (top3_scores - top3_scores.min()) / (top3_scores.max() - 1e-6)
-    percentages = (normalized_scores * 100).astype(int)
+    percentages = (top3_scores * 100).round().astype(int)
 
     return list(zip(top3_labels, percentages))
+
 
 
 # تلخيص واقتراح عنوان عبر Groq API
