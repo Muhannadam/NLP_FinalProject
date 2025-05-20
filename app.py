@@ -32,9 +32,10 @@ def predict_top3_with_model(text, model_name):
 
     # اختيار النموذج حسب اسم المستخدم
     if model_name == "Logistic Regression":
-        probabilities = lr_model.decision_function(vectorized)
+        probabilities = lr_model.predict_proba(vectorized)[0]
     else:
-        probabilities = svm_model.decision_function(vectorized)
+        probabilities = svm_model.predict_proba(vectorized)[0]
+
 
     if len(probabilities.shape) == 1:
         probabilities = probabilities.reshape(1, -1)
