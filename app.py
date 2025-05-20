@@ -1,4 +1,4 @@
-# ========== app.py ==========
+# ==========  Import Libraries ==========
 
 import streamlit as st
 import requests
@@ -8,45 +8,41 @@ import os
 import nltk
 from nltk.corpus import stopwords
 
-# تحميل قائمة كلمات التوقف لو لم تكن محملة
+# Download StopWords
 nltk.download('stopwords')
-
-# تعريف مجموعة كلمات التوقف العربية
 arabic_stopwords = set(stopwords.words('arabic'))
 
-# ========== إعداد التوكنات ==========
+# ========== Token ==========
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
-# ========== تحميل النماذج المدربة ==========
+# ========== Load Trained Models ==========
 tfidf = joblib.load('tfidf_vectorizer.pkl')
 label_encoder = joblib.load('label_encoder.pkl')
 svm_model = joblib.load('svm_model.pkl')
 lr_model = joblib.load('lr_model.pkl')
 
 
-# ========== دوال مساعدة ==========
-
-# تنظيف النص
+# Text Cleaning
 def clean_text(text):
     if not isinstance(text, str):
         return ''
 
-    # إزالة التشكيل
+    # Remove Tashkeel
     text = remove_tashkeel(text)
     
-    # إزالة علامات الترقيم والأرقام
+    # Remove punctuation marks and numbers
     text = re.sub(r'[^\u0600-\u06FF\s]', ' ', text) 
     text = re.sub(r'[\d\u0660-\u0669]+', ' ', text)
     text = re.sub(r'[a-zA-Z]+', ' ', text)
     
-    # إزالة الفراغات الزائدة
+    # Remove extra spaces
     text = re.sub(r'\s+', ' ', text).strip()
     
-    # إزالة التكرار المبالغ فيه
+    # Remove excessive repetition
     text = remove_repeated_chars(text)
     
-    # إزالة كلمات التوقف
+    # Remove stop words
     tokens = text.split()
     tokens = [word for word in tokens if word not in arabic_stopwords]
 
@@ -61,7 +57,7 @@ def remove_tashkeel(text):
 def remove_repeated_chars(text):
     return re.sub(r'(.)\1{2,}', r'\1\1', text)
 
-# التنبؤ بأعلى 3 تصنيفات
+# Predict the top 3 categories
 def predict_top3_with_model(text, model_name):
     cleaned = clean_text(text)
     vectorized = tfidf.transform([cleaned])
@@ -81,7 +77,7 @@ def predict_top3_with_model(text, model_name):
 
 
 
-# تلخيص واقتراح عنوان عبر Groq API
+# Summarize and suggest a title using allam-2-7b Model
 def summarize_and_suggest_title(text):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -104,7 +100,7 @@ def summarize_and_suggest_title(text):
     else:
         return f"❌ خطأ في الاتصال: {response.status_code} - {response.text}"
 
-# صفحة حول المشروع
+# About the project page
 def show_about():
     st.markdown("""
     ## حول المشروع 🧠
@@ -117,7 +113,7 @@ def show_about():
     مشروع لمقرر EMAI 631 – معالجة اللغة الطبيعية (NLP).
     """)
 
-# ========== إعداد واجهة Streamlit ==========
+# ========== Setting up the Streamlit interface ==========
 
 st.set_page_config(
     page_title="تصنيف الأخبار العربية باستخدام الذكاء الاصطناعي",
@@ -125,7 +121,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# واجهة RTL
+# RTL
 st.markdown(
     """
     <style>
@@ -145,7 +141,7 @@ tabs = st.tabs(["📰 تصنيف وتحليل مقال", "ℹ️ حول المش
 
 
 
-# ======== التبويب الأول: تصنيف وتحليل مقال ========
+# ======== Tab 1: Article Classification and Analysis ========
 with tabs[0]:
     st.subheader("📄 أدخل نص المقال:")
     user_input = st.text_area("✍️ اكتب أو الصق نص المقال هنا:", height=250)
@@ -159,7 +155,7 @@ with tabs[0]:
         if not user_input.strip():
             st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
         else:
-            # استدعاء الدالة مع اختيار النموذج
+            # Call the function with the selected model
             top3_predictions = predict_top3_with_model(user_input, model_choice)
 
             st.success("✅ أعلى 3 تصنيفات محتملة:")
@@ -172,10 +168,10 @@ with tabs[0]:
             st.write(result)
 
 
-# ======== التبويب الثاني: حول المشروع ========
+# ======== Tab 2: About the Project ========
 with tabs[1]:
     show_about()
 
-# ======== تذييل ========
+# ======== Footer ========
 st.markdown("---")
 st.caption("  NLP مشروع مقدم لمقرر EMAI 631")
