@@ -46,6 +46,13 @@ def clean_text(text):
 
     return text
 
+def remove_tashkeel(text):
+    tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
+    return tashkeel.sub('', text)
+
+def remove_repeated_chars(text):
+    return re.sub(r'(.)\1{2,}', r'\1\1', text)
+
 # التنبؤ بأعلى 3 تصنيفات
 def predict_top3_with_model(text, model_name):
     cleaned = clean_text(text)
