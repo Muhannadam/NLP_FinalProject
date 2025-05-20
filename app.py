@@ -5,6 +5,14 @@ import requests
 import joblib
 import re
 import os
+import nltk
+from nltk.corpus import stopwords
+
+# تحميل قائمة كلمات التوقف لو لم تكن محملة
+nltk.download('stopwords')
+
+# تعريف مجموعة كلمات التوقف العربية
+arabic_stopwords = set(stopwords.words('arabic'))
 
 # ========== إعداد التوكنات ==========
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
