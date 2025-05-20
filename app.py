@@ -14,6 +14,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 tfidf = joblib.load('tfidf_vectorizer.pkl')
 label_encoder = joblib.load('label_encoder.pkl')
 svm_model = joblib.load('svm_model.pkl')
+lr_model = joblib.load('lr_model.pkl')
+
 
 # ========== دوال مساعدة ==========
 
@@ -24,14 +26,15 @@ def clean_text(text):
     return text
 
 # التنبؤ بأعلى 3 تصنيفات
-def predict_top3(text):
+def predict_top3_with_model(text, model_name):
     cleaned = clean_text(text)
     vectorized = tfidf.transform([cleaned])
 
-    try:
+    # اختيار النموذج حسب اسم المستخدم
+    if model_name == "Logistic Regression":
+        probabilities = lr_model.decision_function(vectorized)
+    else:
         probabilities = svm_model.decision_function(vectorized)
-    except:
-        probabilities = svm_model.predict_proba(vectorized)
 
     if len(probabilities.shape) == 1:
         probabilities = probabilities.reshape(1, -1)
@@ -44,6 +47,7 @@ def predict_top3(text):
     percentages = (normalized_scores * 100).astype(int)
 
     return list(zip(top3_labels, percentages))
+
 
 # تلخيص واقتراح عنوان عبر Groq API
 def summarize_and_suggest_title(text):
@@ -106,6 +110,12 @@ st.title("📰 تصنيف الأخبار العربية باستخدام الذ�
 
 tabs = st.tabs(["📰 تصنيف وتحليل مقال", "ℹ️ حول المشروع"])
 
+model_choice = st.selectbox(
+    "اختر نموذج التصنيف",
+    ("SVM", "Logistic Regression")
+)
+
+
 # ======== التبويب الأول: تصنيف وتحليل مقال ========
 with tabs[0]:
     st.subheader("📄 أدخل نص المقال:")
@@ -115,18 +125,18 @@ with tabs[0]:
         if not user_input.strip():
             st.warning("⚠️ الرجاء إدخال نص قبل التصنيف.")
         else:
-            # تصنيف
-            top3_predictions = predict_top3(user_input)
-            
+            # استدعاء الدالة مع اختيار النموذج
+            top3_predictions = predict_top3_with_model(user_input, model_choice)
+
             st.success("✅ أعلى 3 تصنيفات محتملة:")
             for label, percent in top3_predictions:
                 st.write(f"🔹 {label}: {percent}%")
 
-            # تلخيص واقتراح عنوان
             st.markdown("---")
             st.success("📝 تلخيص المقال واقتراح عنوان:")
             result = summarize_and_suggest_title(user_input)
             st.write(result)
+
 
 # ======== التبويب الثاني: حول المشروع ========
 with tabs[1]:
