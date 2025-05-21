@@ -13,7 +13,7 @@ The project relies on **Allam** model for generative tasks **only** (summarizati
 
 ## 📚 Project Description
 
-We developed an end-to-end Arabic news classification and summarization system by combining classical machine learning (SVM) for classification and generative AI for text summarization and headline generation.
+We developed an end-to-end Arabic news classification and summarization system by combining classical machine learning (SVM & Logistic Regression) for classification and generative AI for text summarization and headline generation.
 
 The system was designed to handle Arabic language text properly (Right-to-Left) and deliver fast, secure, and high-quality outputs.
 
@@ -36,7 +36,7 @@ The system was designed to handle Arabic language text properly (Right-to-Left) 
 | Category | Technologies |
 |:--|:--|
 | Programming Language | Python 3.10 |
-| Machine Learning | Scikit-learn (SVM Classifier) |
+| Machine Learning | SVM & Logistic Regression |
 | Web Application | Streamlit |
 | API Integration | Requests |
 | Generative AI | (Allam Model) |
@@ -54,9 +54,12 @@ The system was designed to handle Arabic language text properly (Right-to-Left) 
 - **Categories:** Finance, Sports, Medical, Technology, Politics, Religion, Culture
 - **Number of Samples:** 45,500 articles
 - **Preprocessing Steps:**
-  - Removing non-Arabic characters and punctuation.
+  - Filtering out common irrelevant words using NLTK’s Arabic stopwords list.
   - Text normalization.
   - Whitespace cleanup.
+  - Removing Arabic diacritics (Tashkeel)
+  - Removing non-Arabic characters and punctuation.
+
 - **Train/Test Split:** 80% Training - 20% Testing
 
 ---
@@ -67,7 +70,7 @@ The system was designed to handle Arabic language text properly (Right-to-Left) 
 2. **Text Preprocessing:** Clean and prepare the input.
 3. **Classification Module:**
    - TF-IDF vectorization.
-   - Prediction via SVM Classifier.
+   - Prediction via SVM Classifier or Logistic Regression.
    - Display top-3 category predictions with confidence.
 4. **Summarization and Headline Generation:**
    - Send cleaned text to (Allam model) through API.
